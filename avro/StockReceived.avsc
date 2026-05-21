@@ -1,0 +1,30 @@
+{
+  "type" : "record",
+  "name" : "StockReceived",
+  "namespace" : "{{basePackage}}.events.avro",
+  "fields" : [ {
+    "name" : "sku",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "quantity",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "availableQuantity",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "reservedQuantity",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "soldQuantity",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "reason",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "reference",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "receivedAt",
+    "type" : [ "null", "string" ]
+  } ]
+}

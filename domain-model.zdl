@@ -1,0 +1,191 @@
+config {
+    title "Arcadia Editions - Catalog Inventory"
+    basePackage "com.arcadiaeditions.catalog.inventory"
+    persistence jpa
+
+    plugins {
+        /** Generates an AsyncAPI v3 specification from this ZDL model. */
+        ZDLToAsyncAPIPlugin {
+            schemaFormat avro
+            idType integer
+            idTypeFormat int64
+            avroPackage com.arcadiaeditions.catalog.inventory.events.avro
+            includeCloudEventsHeaders true
+            includeKafkaCommonHeaders true
+            targetFile "./asyncapi.yml"
+        }
+        /** Generates an OpenAPI 3.0 specification from this ZDL model. */
+        ZDLToOpenAPIPlugin {
+            idType integer
+            idTypeFormat int64
+            targetFile "./openapi.yml"
+        }
+    }
+}
+
+@aggregate
+@lifecycle(field: status, initial: RESERVED)
+entity StockReservation {
+    reservationId String required unique
+    orderId String required unique
+    sku String required
+    quantity Integer required
+    status ReservationStatus required
+    reservedAt Instant required
+    expiresAt Instant required
+    releasedAt Instant
+    releaseReason StockReleaseReason
+}
+
+enum ReservationStatus {
+    RESERVED
+    RELEASED
+    CONFIRMED
+}
+
+enum StockReleaseReason {
+    PAYMENT_DECLINED
+    PAYMENT_RETRY_EXHAUSTED
+    PAYMENT_VOIDED
+    RESERVATION_EXPIRED
+}
+
+input ReserveStockInput {
+    orderId String required
+    sku String required
+    quantity Integer required
+}
+
+input ReleaseStockInput {
+    reservationId String
+    orderId String required
+    sku String required
+    quantity Integer required
+    reason StockReleaseReason required
+}
+
+output StockReserved {
+    reservationId String
+    orderId String
+    sku String
+    quantity Integer
+    reservedAt Instant
+    expiresAt Instant
+}
+
+output StockUnavailable {
+    orderId String
+    sku String
+    requestedQuantity Integer
+    availableQuantity Integer
+}
+
+@rest("/inventory")
+service InventoryService for (StockReservation) {
+
+    @post("/reservations")
+    @transition(to: RESERVED)
+    reserveStock(ReserveStockInput) StockReserved
+
+    @asyncapi({ channel: "PaymentDeclinedEventsChannel", topic: "payments.events.payment-declined" })
+    @asyncapi({ channel: "PaymentRetryExhaustedEventsChannel", topic: "payments.events.payment-retry-exhausted" })
+    @asyncapi({ channel: "PaymentVoidedEventsChannel", topic: "payments.events.payment-voided" })
+    @asyncapi({ channel: "ReservationExpiredEventsChannel", topic: "scheduler.events.reservation-expired" })
+    @transition(from: RESERVED, to: RELEASED)
+    releaseStock(ReleaseStockInput) StockReservation withEvents StockReleased
+}
+
+@asyncapi({ channel: "StockReservedEventsChannel", topic: "catalog-inventory.events.stock-reserved" })
+event StockReserved {
+    reservationId String
+    orderId String
+    sku String
+    quantity Integer
+    reservedAt Instant
+    expiresAt Instant
+}
+
+@asyncapi({ channel: "StockReleasedEventsChannel", topic: "catalog-inventory.events.stock-released" })
+event StockReleased {
+    reservationId String
+    orderId String
+    sku String
+    quantity Integer
+    reason StockReleaseReason
+    releasedAt Instant
+}
+
+//--- backoffice ----
+
+@aggregate
+entity InventoryPosition {
+    sku String required unique
+    availableQuantity Integer required
+    reservedQuantity Integer required
+    soldQuantity Integer required
+}
+
+
+input CreateInventoryPositionInput {
+    sku String required
+    initialQuantity Integer required
+}
+
+input ReceiveStockInput {
+    sku String required
+    quantity Integer required
+    reason String
+    reference String
+}
+
+input AdjustStockInput {
+    sku String required
+    quantityDelta Integer required
+    reason StockAdjustmentReason required
+    reference String
+}
+
+enum StockAdjustmentReason {
+    DAMAGED
+    LOST
+    FOUND
+    MANUAL_CORRECTION
+    RETURNED
+}
+
+@rest("/inventory")
+service InventoryBackofficeService for (InventoryPosition) {
+
+    @post("/positions")
+    createInventoryPosition(CreateInventoryPositionInput) InventoryPosition
+
+    @post("/{sku}/stock-intakes")
+    receiveStock(ReceiveStockInput) InventoryPosition withEvents StockReceived
+
+    @post("/{sku}/adjustments")
+    adjustStock(AdjustStockInput) InventoryPosition withEvents StockAdjusted
+}
+
+@asyncapi({ channel: "StockReceivedEventsChannel", topic: "catalog-inventory.events.stock-received" })
+event StockReceived {
+    sku String
+    quantity Integer
+    availableQuantity Integer
+    reservedQuantity Integer
+    soldQuantity Integer
+    reason String
+    reference String
+    receivedAt Instant
+}
+
+@asyncapi({ channel: "StockAdjustedEventsChannel", topic: "catalog-inventory.events.stock-adjusted" })
+event StockAdjusted {
+    sku String
+    quantityDelta Integer
+    availableQuantity Integer
+    reservedQuantity Integer
+    soldQuantity Integer
+    reason StockAdjustmentReason
+    reference String
+    adjustedAt Instant
+}

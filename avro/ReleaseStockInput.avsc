@@ -1,0 +1,21 @@
+{
+  "type" : "record",
+  "name" : "ReleaseStockInput",
+  "namespace" : "{{basePackage}}.events.avro",
+  "fields" : [ {
+    "name" : "reservationId",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "orderId",
+    "type" : "string"
+  }, {
+    "name" : "sku",
+    "type" : "string"
+  }, {
+    "name" : "quantity",
+    "type" : "int"
+  }, {
+    "name" : "reason",
+    "type" : "StockReleaseReason"
+  } ]
+}

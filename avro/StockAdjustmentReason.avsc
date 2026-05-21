@@ -1,0 +1,6 @@
+{
+  "type" : "enum",
+  "name" : "StockAdjustmentReason",
+  "namespace" : "{{basePackage}}.events.avro",
+  "symbols" : [ "DAMAGED", "LOST", "FOUND", "MANUAL_CORRECTION", "RETURNED" ]
+}

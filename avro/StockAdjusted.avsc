@@ -1,0 +1,30 @@
+{
+  "type" : "record",
+  "name" : "StockAdjusted",
+  "namespace" : "{{basePackage}}.events.avro",
+  "fields" : [ {
+    "name" : "sku",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "quantityDelta",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "availableQuantity",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "reservedQuantity",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "soldQuantity",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "reason",
+    "type" : "StockAdjustmentReason"
+  }, {
+    "name" : "reference",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "adjustedAt",
+    "type" : [ "null", "string" ]
+  } ]
+}

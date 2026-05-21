@@ -1,0 +1,24 @@
+{
+  "type" : "record",
+  "name" : "StockReserved",
+  "namespace" : "{{basePackage}}.events.avro",
+  "fields" : [ {
+    "name" : "reservationId",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "orderId",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "sku",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "quantity",
+    "type" : [ "null", "int" ]
+  }, {
+    "name" : "reservedAt",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "expiresAt",
+    "type" : [ "null", "string" ]
+  } ]
+}
