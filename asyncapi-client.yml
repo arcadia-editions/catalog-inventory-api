@@ -1,0 +1,22 @@
+asyncapi: 3.0.0
+id: urn:com.arcadiaeditions.catalog.inventory:client
+info:
+  title: "Arcadia Editions - Catalog Inventory - AsyncAPI Client"
+  version: 1.0.0
+  description: "Consumed AsyncAPI channels for Arcadia Editions - Catalog Inventory."
+
+channels:
+
+  PaymentVoidedChannel:
+    $ref: 'https://raw.githubusercontent.com/arcadia-editions/payments-processing-api/main/asyncapi.yml#/channels/PaymentVoidedChannel'
+
+
+
+operations:
+
+  onPaymentVoided:
+    action: receive
+    channel:
+      $ref: '#/channels/PaymentVoidedChannel'
+
+
