@@ -1,5 +1,5 @@
 asyncapi: 3.0.0
-id: urn:com.arcadiaeditions.catalog.inventory:client
+id: urn:com.arcadiaeditions:catalog:inventory:asyncapi:client
 info:
   title: "Arcadia Editions - Catalog Inventory - AsyncAPI Client"
   version: 1.0.0
@@ -7,16 +7,15 @@ info:
 
 channels:
 
-  PaymentVoidedChannel:
-    $ref: 'https://raw.githubusercontent.com/arcadia-editions/payments-processing-api/main/asyncapi.yml#/channels/PaymentVoidedChannel'
+  payment-voided-event-v1:
+    $ref: 'https://raw.githubusercontent.com/arcadia-editions/payments-processing-api/main/asyncapi.yml#/channels/payment-voided-event-v1'
 
 
 
 operations:
 
-  onPaymentVoided:
+  onPaymentVoidedEventV1:
     action: receive
     channel:
-      $ref: '#/channels/PaymentVoidedChannel'
-
+      $ref: '#/channels/payment-voided-event-v1'
 

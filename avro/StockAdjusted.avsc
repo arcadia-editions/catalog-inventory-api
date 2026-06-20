@@ -1,7 +1,7 @@
 {
   "type" : "record",
   "name" : "StockAdjusted",
-  "namespace" : "{{basePackage}}.events.avro",
+  "namespace" : "com.arcadiaeditions.catalog.inventory.events.avro",
   "fields" : [ {
     "name" : "sku",
     "type" : [ "null", "string" ]

@@ -1,5 +1,5 @@
 config {
-    id "urn:com.arcadiaeditions.catalog.inventory"
+    id "urn:com.arcadiaeditions:catalog:inventory"
     title "Arcadia Editions - Catalog Inventory"
     basePackage "com.arcadiaeditions.catalog.inventory"
     persistence jpa
@@ -7,6 +7,7 @@ config {
     plugins {
         /** Generates an AsyncAPI v3 specification from this ZDL model. */
         ZDLToAsyncAPIPlugin {
+            id "urn:com.arcadiaeditions:catalog:inventory:asyncapi"
             schemaFormat avro
             idType integer
             idTypeFormat int64
@@ -16,7 +17,7 @@ config {
             targetFile "./asyncapi.yml"
         }
         ZDLToAsyncAPIClientPlugin {
-            id "urn:com.arcadiaeditions.catalog.inventory:client"
+            id "urn:com.arcadiaeditions:catalog:inventory:asyncapi:client"
             title "Arcadia Editions - Catalog Inventory - AsyncAPI Client"
             targetFile "./asyncapi-client.yml"
         }
@@ -97,10 +98,10 @@ service InventoryService for (StockReservation) {
     @transition(to: RESERVED)
     reserveStock(ReserveStockInput) StockReserved
 
-    @asyncapi(api: PaymentsProcessingApi, channel: PaymentDeclinedChannel)
-    @asyncapi(api: PaymentsProcessingApi, channel: PaymentRetryExhaustedChannel)
-    @asyncapi(api: PaymentsProcessingApi, channel: PaymentVoidedChannel)
-    @timer(api: SchedulerApi, channel: ReservationExpiredChannel)
+    @asyncapi(api: PaymentsProcessingApi, channel: "payment-declined-event-v1")
+    @asyncapi(api: PaymentsProcessingApi, channel: "payment-retry-exhausted-event-v1")
+    @asyncapi(api: PaymentsProcessingApi, channel: "payment-voided-event-v1")
+    @timer(api: SchedulerApi, channel: "reservation-expired-event-v1")
     @transition(from: RESERVED, to: RELEASED)
     releaseStock(ReleaseStockInput) StockReservation withEvents StockReleased
 
@@ -109,7 +110,7 @@ service InventoryService for (StockReservation) {
     confirmStockReservation(ReserveStockInput) withEvents StockReservationConfirmed
 }
 
-@asyncapi({ channel: "StockReservedChannel", topic: "catalog-inventory.events.stock-reserved" })
+@asyncapi({ channel: "stock-reserved-event-v1", topic: "catalog-inventory.stock-reserved.event.avro.v1" })
 event StockReserved {
     reservationId String
     orderId String
@@ -119,7 +120,7 @@ event StockReserved {
     expiresAt Instant
 }
 
-@asyncapi({ channel: "StockReleasedChannel", topic: "catalog-inventory.events.stock-released" })
+@asyncapi({ channel: "stock-released-event-v1", topic: "catalog-inventory.stock-released.event.avro.v1" })
 event StockReleased {
     reservationId String
     orderId String
@@ -129,7 +130,7 @@ event StockReleased {
     releasedAt Instant
 }
 
-@asyncapi({ channel: "StockReservationConfirmedChannel", topic: "catalog-inventory.events.stock-confirmed" })
+@asyncapi({ channel: "stock-reservation-confirmed-event-v1", topic: "catalog-inventory.stock-reservation-confirmed.event.avro.v1" })
 event StockReservationConfirmed {
     reservationId String
     orderId String
@@ -190,7 +191,7 @@ service InventoryBackofficeService for (InventoryPosition) {
     adjustStock(AdjustStockInput) InventoryPosition withEvents StockAdjusted
 }
 
-@asyncapi({ channel: "StockReceivedChannel", topic: "catalog-inventory.events.stock-received" })
+@asyncapi({ channel: "stock-received-event-v1", topic: "catalog-inventory.stock-received.event.avro.v1" })
 event StockReceived {
     sku String
     quantity Integer
@@ -202,7 +203,7 @@ event StockReceived {
     receivedAt Instant
 }
 
-@asyncapi({ channel: "StockAdjustedChannel", topic: "catalog-inventory.events.stock-adjusted" })
+@asyncapi({ channel: "stock-adjusted-event-v1", topic: "catalog-inventory.stock-adjusted.event.avro.v1" })
 event StockAdjusted {
     sku String
     quantityDelta Integer

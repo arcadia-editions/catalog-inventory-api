@@ -1,6 +1,6 @@
 {
   "type" : "enum",
   "name" : "StockReleaseReason",
-  "namespace" : "{{basePackage}}.events.avro",
+  "namespace" : "com.arcadiaeditions.catalog.inventory.events.avro",
   "symbols" : [ "PAYMENT_DECLINED", "PAYMENT_RETRY_EXHAUSTED", "PAYMENT_VOIDED", "RESERVATION_EXPIRED" ]
 }

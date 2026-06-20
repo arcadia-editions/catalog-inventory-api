@@ -1,7 +1,7 @@
 {
   "type" : "record",
   "name" : "StockReserved",
-  "namespace" : "{{basePackage}}.events.avro",
+  "namespace" : "com.arcadiaeditions.catalog.inventory.events.avro",
   "fields" : [ {
     "name" : "reservationId",
     "type" : [ "null", "string" ]

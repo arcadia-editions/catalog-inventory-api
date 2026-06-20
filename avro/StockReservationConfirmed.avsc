@@ -1,6 +1,6 @@
 {
   "type" : "record",
-  "name" : "StockReleased",
+  "name" : "StockReservationConfirmed",
   "namespace" : "com.arcadiaeditions.catalog.inventory.events.avro",
   "fields" : [ {
     "name" : "reservationId",

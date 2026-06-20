@@ -1,6 +1,6 @@
 {
   "type" : "enum",
   "name" : "StockAdjustmentReason",
-  "namespace" : "{{basePackage}}.events.avro",
+  "namespace" : "com.arcadiaeditions.catalog.inventory.events.avro",
   "symbols" : [ "DAMAGED", "LOST", "FOUND", "MANUAL_CORRECTION", "RETURNED" ]
 }
