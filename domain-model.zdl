@@ -1,5 +1,6 @@
 config {
     id "urn:com.arcadiaeditions:catalog:inventory"
+    version "0.1.0"
     title "Arcadia Editions - Catalog Inventory"
     basePackage "com.arcadiaeditions.catalog.inventory"
     persistence jpa
@@ -8,17 +9,31 @@ config {
         /** Generates an AsyncAPI v3 specification from this ZDL model. */
         ZDLToAsyncAPIPlugin {
             id "urn:com.arcadiaeditions:catalog:inventory:asyncapi"
+            applicationExtensions """
+            x-application-bindings:
+              x-principal: catalog_inventory
+              x-clientId: catalog_inventory
+              x-groupId: catalog_inventory
+            """
             schemaFormat avro
             idType integer
             idTypeFormat int64
             avroPackage com.arcadiaeditions.catalog.inventory.events.avro
             includeCloudEventsHeaders true
             includeKafkaCommonHeaders true
+            asyncapiOverlayFiles "https://raw.githubusercontent.com/arcadia-editions/api-contract-commons/refs/heads/main/asyncapi-overlay.yml"
             targetFile "./asyncapi.yml"
         }
         ZDLToAsyncAPIClientPlugin {
             id "urn:com.arcadiaeditions:catalog:inventory:asyncapi:client"
+            applicationExtensions """
+            x-application-bindings:
+              x-principal: catalog_inventory
+              x-clientId: catalog_inventory
+              x-groupId: catalog_inventory
+            """
             title "Arcadia Editions - Catalog Inventory - AsyncAPI Client"
+            asyncapiOverlayFiles "https://raw.githubusercontent.com/arcadia-editions/api-contract-commons/refs/heads/main/asyncapi-client-overlay.yml"
             targetFile "./asyncapi-client.yml"
         }
         /** Generates an OpenAPI 3.0 specification from this ZDL model. */

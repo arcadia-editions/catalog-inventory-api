@@ -1,21 +1,37 @@
 asyncapi: 3.0.0
 id: urn:com.arcadiaeditions:catalog:inventory:asyncapi:client
+
 info:
-  title: "Arcadia Editions - Catalog Inventory - AsyncAPI Client"
-  version: 1.0.0
-  description: "Consumed AsyncAPI channels for Arcadia Editions - Catalog Inventory."
+  title: Arcadia Editions - Catalog Inventory - AsyncAPI Client
+  version: 0.1.0
+  description: Consumed AsyncAPI channels for Arcadia Editions - Catalog Inventory.
+
+x-application-bindings:
+  x-principal: catalog_inventory
+  x-clientId: catalog_inventory
+  x-groupId: catalog_inventory
 
 channels:
-
   payment-voided-event-v1:
-    $ref: 'https://raw.githubusercontent.com/arcadia-editions/payments-processing-api/main/asyncapi.yml#/channels/payment-voided-event-v1'
-
-
+    $ref: https://raw.githubusercontent.com/arcadia-editions/payments-processing-api/main/asyncapi.yml#/channels/payment-voided-event-v1
 
 operations:
-
   onPaymentVoidedEventV1:
     action: receive
     channel:
-      $ref: '#/channels/payment-voided-event-v1'
+      $ref: "#/channels/payment-voided-event-v1"
+    traits:
+    - $ref: "#/components/operationTraits/clientIdAndPrincipal"
 
+components:
+  messageTraits:
+    CommonHeaders:
+      $ref: https://raw.githubusercontent.com/arcadia-editions/api-contract-commons/refs/heads/main/asyncapi-message-traits.yml#/components/messageTraits/CommonHeaders
+  operationTraits:
+    clientIdAndPrincipal:
+      bindings:
+        kafka:
+          x-principal:
+            $ref: "#/x-application-bindings/x-principal"
+          x-groupId:
+            $ref: "#/x-application-bindings/x-groupId"

@@ -11,18 +11,18 @@ AsyncAPI-first service repository for the Arcadia Editions inventory contracts.
 - [openapi.yml](./openapi.yml): HTTP API contract generated from the ZDL model
 - [avro/](./avro/): Avro event schemas referenced by the AsyncAPI document
 - [.github/workflows/provision-kafka.yml](./.github/workflows/provision-kafka.yml): workflow entrypoint for shared Kafka provisioning
-- [scripts/run-kafka-pipeline-local.sh](./scripts/run-kafka-pipeline-local.sh): local Git Bash helper for the same generate and Terraform flow
+- [provision-kafka-local.sh](../api-product-workflows/scripts/terraform/provision-kafka-local.sh): local Git Bash helper for the same generate and Terraform flow
 
 ## Local usage
 
 From Git Bash, after exporting the required Terraform and Confluent environment variables:
 
 ```bash
-./scripts/run-kafka-pipeline-local.sh develop
+../api-product-workflows/scripts/terraform/provision-kafka-local.sh develop
 ```
 
 To apply the generated Terraform locally:
 
 ```bash
-APPLY_MODE=true ./scripts/run-kafka-pipeline-local.sh develop
+APPLY_MODE=true ../api-product-workflows/scripts/terraform/provision-kafka-local.sh develop
 ```

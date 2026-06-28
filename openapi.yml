@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: "Arcadia Editions - Catalog Inventory"
-  version: 0.0.1
+  version: 0.1.0
   description: "Arcadia Editions - Catalog Inventory"
   contact:
     email: email@domain.com
@@ -28,6 +28,7 @@ paths:
   /inventory/reservations:
     post:
       operationId: reserveStock
+      summary: "reserveStock"
       description: "reserveStock"
       tags: [Inventory]
       requestBody:
@@ -46,6 +47,7 @@ paths:
   /inventory/positions:
     post:
       operationId: createInventoryPosition
+      summary: "createInventoryPosition"
       description: "createInventoryPosition"
       tags: [InventoryBackoffice]
       requestBody:
@@ -64,6 +66,7 @@ paths:
   /inventory/{sku}/stock-intakes:
     post:
       operationId: receiveStock
+      summary: "receiveStock"
       description: "receiveStock"
       tags: [InventoryBackoffice]
       parameters:
@@ -88,6 +91,7 @@ paths:
   /inventory/{sku}/adjustments:
     post:
       operationId: adjustStock
+      summary: "adjustStock"
       description: "adjustStock"
       tags: [InventoryBackoffice]
       parameters:
