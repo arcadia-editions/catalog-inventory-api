@@ -90,7 +90,7 @@ input ReleaseStockInput {
     reason StockReleaseReason required
 }
 
-output StockReserved {
+output StockReservedResult {
     reservationId String
     orderId String
     sku String
@@ -99,7 +99,7 @@ output StockReserved {
     expiresAt Instant
 }
 
-output StockUnavailable {
+output StockUnavailableResult {
     orderId String
     sku String
     requestedQuantity Integer
@@ -111,7 +111,7 @@ service InventoryService for (StockReservation) {
 
     @post("/reservations/reserve")
     @transition(to: RESERVED)
-    reserveStock(ReserveStockInput) StockReserved
+    reserveStock(ReserveStockInput) StockReservedResult
 
     @asyncapi(api: PaymentsProcessingApi, channel: "payment-declined-event-v1")
     @asyncapi(api: PaymentsProcessingApi, channel: "payment-retry-exhausted-event-v1")
@@ -123,16 +123,6 @@ service InventoryService for (StockReservation) {
     @post("/reservations/confirm")
     @transition(from: RESERVED, to: CONFIRMED)
     confirmStockReservation(ReserveStockInput) withEvents StockReservationConfirmed
-}
-
-@asyncapi({ channel: "stock-reserved-event-v1", topic: "catalog-inventory.stock-reserved.event.avro.v1" })
-event StockReserved {
-    reservationId String
-    orderId String
-    sku String
-    quantity Integer
-    reservedAt Instant
-    expiresAt Instant
 }
 
 @asyncapi({ channel: "stock-released-event-v1", topic: "catalog-inventory.stock-released.event.avro.v1" })
