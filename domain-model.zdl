@@ -53,12 +53,14 @@ apis {
 @lifecycle(field: status, initial: RESERVED)
 entity StockReservation {
     reservationId String required unique
-    orderId String required unique
+    /** One reservation per order line: an order has as many reservations as items. */
+    orderId String required
     sku String required
     quantity Integer required
     status ReservationStatus required
     reservedAt Instant required
     expiresAt Instant required
+    confirmedAt Instant
     releasedAt Instant
     releaseReason StockReleaseReason
 }
@@ -78,32 +80,56 @@ enum StockReleaseReason {
 
 input ReserveStockInput {
     orderId String required
-    sku String required
-    quantity Integer required
+    items ReserveStockItemInput[] required minlength(1) {
+        sku String required
+        quantity Integer required min(1)
+    }
 }
 
-input ReleaseStockInput {
-    reservationId String
+/** Confirms every reservation of the order. */
+input ConfirmStockReservationInput {
     orderId String required
-    sku String required
-    quantity Integer required
+}
+
+/** Releases every reservation of the order. */
+input ReleaseStockInput {
+    orderId String required
     reason StockReleaseReason required
 }
 
+enum ReserveStockOutcome {
+    RESERVED
+    UNAVAILABLE
+}
+
+/**
+ * Wrapper for the two ZFL responses of reserveStock (ZDL has no union return type).
+ * Exactly one of `reserved` / `unavailable` is set, according to `outcome`.
+ */
+output ReserveStockResult {
+    outcome ReserveStockOutcome required
+    reserved StockReservedResult
+    unavailable StockUnavailableResult
+}
+
 output StockReservedResult {
-    reservationId String
     orderId String
-    sku String
-    quantity Integer
-    reservedAt Instant
     expiresAt Instant
+    reservations StockReservedLine[] {
+        reservationId String
+        sku String
+        quantity Integer
+        reservedAt Instant
+    }
 }
 
 output StockUnavailableResult {
     orderId String
-    sku String
-    requestedQuantity Integer
-    availableQuantity Integer
+    unavailableItems StockUnavailableLine[] {
+        sku String
+        requestedQuantity Integer
+        availableQuantity Integer
+    }
 }
 
 @rest("/inventory")
@@ -111,38 +137,41 @@ service InventoryService for (StockReservation) {
 
     @post("/reservations/reserve")
     @transition(to: RESERVED)
-    reserveStock(ReserveStockInput) StockReservedResult
+    reserveStock(ReserveStockInput) ReserveStockResult
 
     @asyncapi(api: PaymentsProcessingApi, channel: "payment-declined-event-v1")
     @asyncapi(api: PaymentsProcessingApi, channel: "payment-retry-exhausted-event-v1")
     @asyncapi(api: PaymentsProcessingApi, channel: "payment-voided-event-v1")
     @timer(api: SchedulerApi, channel: "reservation-expired-event-v1")
-    @transition(from: RESERVED, to: RELEASED)
-    releaseStock(ReleaseStockInput) StockReservation withEvents StockReleased
+    @transition(from: [RESERVED, CONFIRMED], to: RELEASED)
+    releaseStock(ReleaseStockInput) StockReservation[] withEvents StockReleased
 
     @post("/reservations/confirm")
     @transition(from: RESERVED, to: CONFIRMED)
-    confirmStockReservation(ReserveStockInput) withEvents StockReservationConfirmed
+    confirmStockReservation(ConfirmStockReservationInput) StockReservation[] withEvents StockReservationConfirmed
 }
 
 @asyncapi({ channel: "stock-released-event-v1", topic: "catalog-inventory.stock-released.event.avro.v1" })
 event StockReleased {
-    reservationId String
     orderId String
-    sku String
-    quantity Integer
     reason StockReleaseReason
     releasedAt Instant
+    items StockReleasedItem[] {
+        reservationId String
+        sku String
+        quantity Integer
+    }
 }
 
 @asyncapi({ channel: "stock-reservation-confirmed-event-v1", topic: "catalog-inventory.stock-reservation-confirmed.event.avro.v1" })
 event StockReservationConfirmed {
-    reservationId String
     orderId String
-    sku String
-    quantity Integer
-    reason StockReleaseReason
-    releasedAt Instant
+    confirmedAt Instant
+    items StockReservationConfirmedItem[] {
+        reservationId String
+        sku String
+        quantity Integer
+    }
 }
 
 //--- backoffice ----

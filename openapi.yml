@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: "Arcadia Editions - Catalog Inventory"
-  version: 0.1.0
+  version: 0.0.1
   description: "Arcadia Editions - Catalog Inventory"
   contact:
     email: email@domain.com
@@ -25,10 +25,9 @@ tags:
 
 
 paths:
-  /inventory/reservations:
+  /inventory/reservations/reserve:
     post:
       operationId: reserveStock
-      summary: "reserveStock"
       description: "reserveStock"
       tags: [Inventory]
       requestBody:
@@ -43,11 +42,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StockReserved"
+                $ref: "#/components/schemas/ReserveStockResult"
+  /inventory/reservations/confirm:
+    post:
+      operationId: confirmStockReservation
+      description: "confirmStockReservation"
+      tags: [Inventory]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmStockReservationInput"
+      responses:
+        "201":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockReservationList"
   /inventory/positions:
     post:
       operationId: createInventoryPosition
-      summary: "createInventoryPosition"
       description: "createInventoryPosition"
       tags: [InventoryBackoffice]
       requestBody:
@@ -66,7 +82,6 @@ paths:
   /inventory/{sku}/stock-intakes:
     post:
       operationId: receiveStock
-      summary: "receiveStock"
       description: "receiveStock"
       tags: [InventoryBackoffice]
       parameters:
@@ -91,7 +106,6 @@ paths:
   /inventory/{sku}/adjustments:
     post:
       operationId: adjustStock
-      summary: "adjustStock"
       description: "adjustStock"
       tags: [InventoryBackoffice]
       parameters:
@@ -121,16 +135,23 @@ components:
       x-business-entity: "ReserveStockInput"
       required:
       - "orderId"
-      - "sku"
-      - "quantity"
+      - "items"
       properties:
         orderId:
           type: "string"
-        sku:
+        items:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ReserveStockItemInput"
+          minItems: 1
+    ConfirmStockReservationInput:
+      type: "object"
+      x-business-entity: "ConfirmStockReservationInput"
+      required:
+      - "orderId"
+      properties:
+        orderId:
           type: "string"
-        quantity:
-          type: "integer"
-          format: "int32"
     CreateInventoryPositionInput:
       type: "object"
       x-business-entity: "CreateInventoryPositionInput"
@@ -176,25 +197,71 @@ components:
           $ref: "#/components/schemas/StockAdjustmentReason"
         reference:
           type: "string"
-    StockReserved:
+    ReserveStockResult:
       type: "object"
-      x-business-entity: "StockReserved"
+      x-business-entity: "ReserveStockResult"
+      required:
+      - "outcome"
       properties:
+        outcome:
+          $ref: "#/components/schemas/ReserveStockOutcome"
+        reserved:
+          $ref: "#/components/schemas/StockReservedResult"
+        unavailable:
+          $ref: "#/components/schemas/StockUnavailableResult"
+    StockReservation:
+      type: "object"
+      x-business-entity: "StockReservation"
+      required:
+      - "reservationId"
+      - "orderId"
+      - "sku"
+      - "quantity"
+      - "status"
+      - "reservedAt"
+      - "expiresAt"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          readOnly: true
+        version:
+          type: "integer"
+          default: "null"
+          description: "Version of the document (required in PUT for concurrency control,\
+            \ should be null in POSTs)."
         reservationId:
           type: "string"
+          description: ""
         orderId:
           type: "string"
+          description: "One reservation per order line: an order has as many reservations\
+            \ as items."
         sku:
           type: "string"
         quantity:
           type: "integer"
           format: "int32"
+        status:
+          $ref: "#/components/schemas/ReservationStatus"
         reservedAt:
           type: "string"
           format: "date-time"
         expiresAt:
           type: "string"
           format: "date-time"
+        confirmedAt:
+          type: "string"
+          format: "date-time"
+        releasedAt:
+          type: "string"
+          format: "date-time"
+        releaseReason:
+          $ref: "#/components/schemas/StockReleaseReason"
+    StockReservationList:
+      type: "array"
+      items:
+        $ref: "#/components/schemas/StockReservation"
     InventoryPosition:
       type: "object"
       x-business-entity: "InventoryPosition"
@@ -224,6 +291,73 @@ components:
         soldQuantity:
           type: "integer"
           format: "int32"
+    StockReservedResult:
+      type: "object"
+      x-business-entity: "StockReservedResult"
+      properties:
+        orderId:
+          type: "string"
+        expiresAt:
+          type: "string"
+          format: "date-time"
+        reservations:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/StockReservedLine"
+    StockUnavailableResult:
+      type: "object"
+      x-business-entity: "StockUnavailableResult"
+      properties:
+        orderId:
+          type: "string"
+        unavailableItems:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/StockUnavailableLine"
+    StockReservedLine:
+      type: "object"
+      x-business-entity: "StockReservedLine"
+      properties:
+        reservationId:
+          type: "string"
+        sku:
+          type: "string"
+        quantity:
+          type: "integer"
+          format: "int32"
+        reservedAt:
+          type: "string"
+          format: "date-time"
+    ReserveStockItemInput:
+      type: "object"
+      x-business-entity: "ReserveStockItemInput"
+      required:
+      - "sku"
+      - "quantity"
+      properties:
+        sku:
+          type: "string"
+        quantity:
+          type: "integer"
+          format: "int32"
+    StockUnavailableLine:
+      type: "object"
+      x-business-entity: "StockUnavailableLine"
+      properties:
+        sku:
+          type: "string"
+        requestedQuantity:
+          type: "integer"
+          format: "int32"
+        availableQuantity:
+          type: "integer"
+          format: "int32"
+    ReserveStockOutcome:
+      type: "string"
+      x-business-entity: "ReserveStockOutcome"
+      enum:
+      - "RESERVED"
+      - "UNAVAILABLE"
     StockAdjustmentReason:
       type: "string"
       x-business-entity: "StockAdjustmentReason"
@@ -233,6 +367,21 @@ components:
       - "FOUND"
       - "MANUAL_CORRECTION"
       - "RETURNED"
+    ReservationStatus:
+      type: "string"
+      x-business-entity: "ReservationStatus"
+      enum:
+      - "RESERVED"
+      - "RELEASED"
+      - "CONFIRMED"
+    StockReleaseReason:
+      type: "string"
+      x-business-entity: "StockReleaseReason"
+      enum:
+      - "PAYMENT_DECLINED"
+      - "PAYMENT_RETRY_EXHAUSTED"
+      - "PAYMENT_VOIDED"
+      - "RESERVATION_EXPIRED"
 
     Page:
       type: object

@@ -22,6 +22,19 @@ operations:
       $ref: "#/channels/payment-voided-event-v1"
     traits:
     - $ref: "#/components/operationTraits/clientIdAndPrincipal"
+    bindings:
+      kafka:
+        x-error-topics:
+          addressTemplate: "${groupId}.__.${channel.address}.${suffix}"
+          retryTopics: 3
+          retrySuffixes:
+          - retry-5s
+          - retry-30s
+          - retry-5m
+          retry:
+            $ref: https://raw.githubusercontent.com/arcadia-editions/api-contract-commons/refs/heads/main/asyncapi-error-topics.yml#/components/error-topics/retry/silver
+          dlq:
+            $ref: https://raw.githubusercontent.com/arcadia-editions/api-contract-commons/refs/heads/main/asyncapi-error-topics.yml#/components/error-topics/dlq/compliance
 
 components:
   messageTraits:

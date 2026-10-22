@@ -3,22 +3,20 @@
   "name" : "StockReleased",
   "namespace" : "com.arcadiaeditions.catalog.inventory.events.avro",
   "fields" : [ {
-    "name" : "reservationId",
-    "type" : [ "null", "string" ]
-  }, {
     "name" : "orderId",
     "type" : [ "null", "string" ]
-  }, {
-    "name" : "sku",
-    "type" : [ "null", "string" ]
-  }, {
-    "name" : "quantity",
-    "type" : [ "null", "int" ]
   }, {
     "name" : "reason",
     "type" : "StockReleaseReason"
   }, {
     "name" : "releasedAt",
     "type" : [ "null", "string" ]
+  }, {
+    "name" : "items",
+    "type" : {
+      "type" : "array",
+      "items" : "StockReleasedItem",
+      "java-class" : "java.util.List"
+    }
   } ]
 }

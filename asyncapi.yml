@@ -3,7 +3,7 @@ id: urn:com.arcadiaeditions:catalog:inventory:asyncapi
 
 info:
   title: Arcadia Editions - Catalog Inventory
-  version: 0.1.0
+  version: 0.0.1
   tags:
   - name: Default
   - name: Inventory
@@ -94,16 +94,6 @@ operations:
 
 components:
   messages:
-    StockReservedEvent:
-      name: StockReservedEvent
-      title: ""
-      summary: ""
-      traits:
-      - $ref: "#/components/messageTraits/CommonHeaders"
-      payload:
-        schemaFormat: application/vnd.apache.avro+json;version=1.9.0
-        schema:
-          $ref: avro/StockReserved.avsc
     StockReleasedEvent:
       name: StockReleasedEvent
       title: ""

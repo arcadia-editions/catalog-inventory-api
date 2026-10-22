@@ -1,0 +1,15 @@
+{
+  "type" : "record",
+  "name" : "StockReleasedItem",
+  "namespace" : "com.arcadiaeditions.catalog.inventory.events.avro",
+  "fields" : [ {
+    "name" : "reservationId",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "sku",
+    "type" : [ "null", "string" ]
+  }, {
+    "name" : "quantity",
+    "type" : [ "null", "int" ]
+  } ]
+}
