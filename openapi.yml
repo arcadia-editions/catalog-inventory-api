@@ -5,9 +5,12 @@ info:
   description: "Arcadia Editions - Catalog Inventory"
   contact:
     email: email@domain.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 servers:
-  - description: localhost
-    url: http://localhost:8080/api
+  - description: API
+    url: /api
   - description: custom
     url: "{protocol}://{server}/{path}"
     variables:
@@ -20,8 +23,11 @@ servers:
         default: 'api'
 tags:
   - name: "Default"
+    description: "Operations that are not assigned to a service."
   - name: "Inventory"
+    description: "Reserve and confirm stock for an order."
   - name: "InventoryBackoffice"
+    description: "Create inventory positions and record stock intakes and adjustments."
 
 
 paths:
@@ -29,6 +35,7 @@ paths:
     post:
       operationId: reserveStock
       description: "reserveStock"
+      summary: "reserveStock"
       tags: [Inventory]
       requestBody:
         required: true
@@ -43,10 +50,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ReserveStockResult"
+        "400":
+          description: "Invalid request"
   /inventory/reservations/confirm:
     post:
       operationId: confirmStockReservation
       description: "confirmStockReservation"
+      summary: "confirmStockReservation"
       tags: [Inventory]
       requestBody:
         required: true
@@ -61,10 +71,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/StockReservationList"
+        "400":
+          description: "Invalid request"
   /inventory/positions:
     post:
       operationId: createInventoryPosition
       description: "createInventoryPosition"
+      summary: "createInventoryPosition"
       tags: [InventoryBackoffice]
       requestBody:
         required: true
@@ -79,10 +92,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InventoryPosition"
+        "400":
+          description: "Invalid request"
   /inventory/{sku}/stock-intakes:
     post:
       operationId: receiveStock
       description: "receiveStock"
+      summary: "receiveStock"
       tags: [InventoryBackoffice]
       parameters:
         - name: "sku"
@@ -103,10 +119,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InventoryPosition"
+        "400":
+          description: "Invalid request"
   /inventory/{sku}/adjustments:
     post:
       operationId: adjustStock
       description: "adjustStock"
+      summary: "adjustStock"
       tags: [InventoryBackoffice]
       parameters:
         - name: "sku"
@@ -127,6 +146,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InventoryPosition"
+        "400":
+          description: "Invalid request"
 
 components:
   schemas:
@@ -382,57 +403,6 @@ components:
       - "PAYMENT_RETRY_EXHAUSTED"
       - "PAYMENT_VOIDED"
       - "RESERVATION_EXPIRED"
-
-    Page:
-      type: object
-      required:
-        - "content"
-        - "totalElements"
-        - "totalPages"
-        - "size"
-        - "number"
-      properties:
-        number:
-          type: integer
-          minimum: 0
-        numberOfElements:
-          type: integer
-          minimum: 0
-        size:
-          type: integer
-          minimum: 0
-          maximum: 200
-          multipleOf: 25
-        totalElements:
-          type: integer
-        totalPages:
-          type: integer
-
-  parameters:
-    page:
-      name: page
-      in: query
-      description: The number of results page
-      schema:
-        type: integer
-        format: int32
-        default: 0
-    limit:
-      name: limit
-      in: query
-      description: The number of results in a single page
-      schema:
-        type: integer
-        format: int32
-        default: 20
-    sort:
-      name: sort
-      in: query
-      description: Sort results by field name and direction (asc or desc)
-      schema:
-        type: array
-        items:
-          type: string
 
   securitySchemes:
     basicAuth:     # <-- arbitrary name for the security scheme
