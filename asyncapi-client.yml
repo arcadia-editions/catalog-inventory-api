@@ -3,7 +3,7 @@ id: urn:com.arcadiaeditions:catalog:inventory:asyncapi:client
 
 info:
   title: Arcadia Editions - Catalog Inventory - AsyncAPI Client
-  version: "0.1.0"
+  version: 0.1.0
   description: Consumed AsyncAPI channels for Arcadia Editions - Catalog Inventory.
 
 x-application-bindings:
@@ -12,14 +12,14 @@ x-application-bindings:
   x-groupId: catalog_inventory
 
 channels:
-  payment-voided-event-v1:
-    $ref: https://raw.githubusercontent.com/arcadia-editions/payments-processing-api/main/asyncapi.yml#/channels/payment-voided-event-v1
+  payment-void-failed-event-v1:
+    $ref: https://raw.githubusercontent.com/arcadia-editions/payments-processing-api/main/asyncapi.yml#/channels/payment-void-failed-event-v1
 
 operations:
-  onPaymentVoidedEventV1:
+  onPaymentVoidFailedEventV1:
     action: receive
     channel:
-      $ref: "#/channels/payment-voided-event-v1"
+      $ref: "#/channels/payment-void-failed-event-v1"
     traits:
     - $ref: "#/components/operationTraits/clientIdAndPrincipal"
     bindings:

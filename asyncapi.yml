@@ -3,7 +3,7 @@ id: urn:com.arcadiaeditions:catalog:inventory:asyncapi
 
 info:
   title: Arcadia Editions - Catalog Inventory
-  version: "0.1.0"
+  version: 0.1.0
   tags:
   - name: Default
   - name: Inventory
@@ -106,8 +106,10 @@ components:
           $ref: avro/StockReleased.avsc
     StockReservationConfirmedEvent:
       name: StockReservationConfirmedEvent
-      title: ""
-      summary: ""
+      title: Published on purpose (inventory projections); no step of place-order-flow
+        consumes it.
+      summary: Published on purpose (inventory projections); no step of place-order-flow
+        consumes it.
       traits:
       - $ref: "#/components/messageTraits/CommonHeaders"
       payload:

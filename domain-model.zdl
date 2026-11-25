@@ -38,6 +38,7 @@ config {
         }
         /** Generates an OpenAPI 3.0 specification from this ZDL model. */
         ZDLToOpenAPIPlugin {
+            openapiOverlayFiles "https://raw.githubusercontent.com/arcadia-editions/api-contract-commons/refs/heads/main/openapi-overlay.yml"
             idType integer
             idTypeFormat int64
             targetFile "./openapi.yml"

@@ -2,5 +2,5 @@
   "type" : "enum",
   "name" : "StockReleaseReason",
   "namespace" : "com.arcadiaeditions.catalog.inventory.events.avro",
-  "symbols" : [ "PAYMENT_DECLINED", "PAYMENT_RETRY_EXHAUSTED", "PAYMENT_VOIDED", "RESERVATION_EXPIRED" ]
+  "symbols" : [ "PAYMENT_DECLINED", "PAYMENT_RETRY_EXHAUSTED", "PAYMENT_VOIDED", "PAYMENT_VOID_FAILED", "RESERVATION_EXPIRED" ]
 }
