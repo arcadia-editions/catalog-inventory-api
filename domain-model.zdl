@@ -47,6 +47,7 @@ config {
 
 apis {
     asyncapi client PaymentsProcessingApi "https://raw.githubusercontent.com/arcadia-editions/payments-processing-api/main/asyncapi.yml"
+    zdl client PaymentsProcessingZdl "https://raw.githubusercontent.com/arcadia-editions/payments-processing-api/main/domain-model.zdl"
 }
 
 @aggregate
@@ -75,6 +76,7 @@ enum StockReleaseReason {
     PAYMENT_DECLINED
     PAYMENT_RETRY_EXHAUSTED
     PAYMENT_VOIDED
+    PAYMENT_VOID_FAILED
     RESERVATION_EXPIRED
 }
 
@@ -94,7 +96,35 @@ input ConfirmStockReservationInput {
 /** Releases every reservation of the order. */
 input ReleaseStockInput {
     orderId String required
+    /** Set by the listener from the triggering event type; never from the event's free-text reason. */
     reason StockReleaseReason required
+}
+
+/** Expires every RESERVED reservation of the order. */
+input ExpireReservationInput {
+    orderId String required
+}
+
+enum ConfirmStockReservationOutcome {
+    CONFIRMED
+    NOT_HELD
+}
+
+/** Exactly one of `confirmed` / `notHeld` is set, according to `outcome`. */
+output ConfirmStockReservationResult {
+    outcome ConfirmStockReservationOutcome required
+    confirmed StockReservationConfirmedResult
+    notHeld StockReservationNotHeldResult
+}
+
+output StockReservationConfirmedResult {
+    orderId String
+    confirmedAt Instant
+}
+
+/** Some line of the order is not RESERVED (released by the timer). Nothing is confirmed. */
+output StockReservationNotHeldResult {
+    orderId String
 }
 
 enum ReserveStockOutcome {
@@ -139,16 +169,28 @@ service InventoryService for (StockReservation) {
     @transition(to: RESERVED)
     reserveStock(ReserveStockInput) ReserveStockResult
 
+    /** The type of the triggering event sets the reason. No-op, no event, when already RELEASED. */
     @asyncapi(api: PaymentsProcessingApi, channel: "payment-declined-event-v1")
     @asyncapi(api: PaymentsProcessingApi, channel: "payment-retry-exhausted-event-v1")
     @asyncapi(api: PaymentsProcessingApi, channel: "payment-voided-event-v1")
-    @timer(api: SchedulerApi, channel: "reservation-expired-event-v1")
+    @asyncapi(api: PaymentsProcessingApi, channel: "payment-void-failed-event-v1")
     @transition(from: [RESERVED, CONFIRMED], to: RELEASED)
     releaseStock(ReleaseStockInput) StockReservation[] withEvents StockReleased
 
+    /**
+     * Reservation timer, 10 minutes after OrderCreated. No-op, no event, when no line of the order
+     * is RESERVED. Releases them (RESERVATION_EXPIRED) only when payments answers NO_PAYMENT;
+     * on STARTED, payment owns the end and nothing happens.
+     */
+    @timer(api: SchedulerApi, channel: "reservation-expired-event-v1")
+    @calls(zdl: PaymentsProcessingZdl, command: PaymentsProcessingService.getPaymentStatus)
+    @transition(from: RESERVED, to: RELEASED)
+    expireReservation(ExpireReservationInput) StockReservation[] withEvents StockReleased
+
+    /** Returns CONFIRMED with no change when every line is already CONFIRMED (redelivery). */
     @post("/reservations/confirm")
     @transition(from: RESERVED, to: CONFIRMED)
-    confirmStockReservation(ConfirmStockReservationInput) StockReservation[] withEvents StockReservationConfirmed
+    confirmStockReservation(ConfirmStockReservationInput) ConfirmStockReservationResult withEvents StockReservationConfirmed
 }
 
 @asyncapi({ channel: "stock-released-event-v1", topic: "catalog-inventory.stock-released.event.avro.v1" })
@@ -163,6 +205,7 @@ event StockReleased {
     }
 }
 
+/** Published on purpose (inventory projections); no step of place-order-flow consumes it. */
 @asyncapi({ channel: "stock-reservation-confirmed-event-v1", topic: "catalog-inventory.stock-reservation-confirmed.event.avro.v1" })
 event StockReservationConfirmed {
     orderId String
@@ -183,7 +226,6 @@ entity InventoryPosition {
     reservedQuantity Integer required
     soldQuantity Integer required
 }
-
 
 input CreateInventoryPositionInput {
     sku String required
