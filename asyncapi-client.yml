@@ -3,7 +3,7 @@ id: urn:com.arcadiaeditions:catalog:inventory:asyncapi:client
 
 info:
   title: Arcadia Editions - Catalog Inventory - AsyncAPI Client
-  version: 0.2.0
+  version: "0.2.1"
   description: Consumed AsyncAPI channels for Arcadia Editions - Catalog Inventory.
 
 x-application-bindings:
